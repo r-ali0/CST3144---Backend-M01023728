@@ -8,7 +8,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __fileName = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = path.dirname(__fileName);
 
 //express server
 const app = express();
@@ -139,11 +139,43 @@ const lessons = [
     }
 ];
 
+//GET: Adding Lesson root and their information inside the database
+app.get('/rootLessons', async (req, res) => {
+
+    try {
+        //Inserting hardcoded lesson info from frontend
+        const db = client.db('lessonsDB');
+        const result = await db.collection('lessons')
+              .insertMany(lessons);
+
+              //if successful gives me the 
+              //amount of lessons and shows it insdie the database
+              res.json({
+                success: true,
+                inserted: result.insertedCount
+              });
+    //Error
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
 //GET: 10 Lessons with their information inside database
 app.get('/lessons/M01023728', async (req, res) => {
 
     try {
-        //lessons array inside database
+        //Database and lesson collection
+        const db = client.db('lessonsDB');
+
+        //shows me the amount of documents inside DB and console
+        const count = await db.collection('lessons').countDocuments();
+        console.log('Documents in lessons:', count);
+
+        //lessons collection
         const lessons = await db.collection('lessons')
         .find({})
         .toArray();
@@ -167,6 +199,7 @@ app.post ('/orders/M01023728', async (req, res) => {
 
     try {
         const order = req.body;
+        const db = client.db('lessonsDB')
 
         //orders database
         await db.collection('orders').insertOne(order);
@@ -186,17 +219,23 @@ app.post ('/orders/M01023728', async (req, res) => {
 app.put('/lessons/M01023728/:id', async (req, res) => {
 
     try {
-        const lessonId = parseInt(req.params.id);
 
+        //defines lesson id for updating and Database
+        const lessonId = parseInt(req.params.id);
+        const db = client.db('lessonsDB')
+
+        //Updates lesson attributes inside the database
         const updateData = req.body;
 
         await db.collection('lessons')
         .updateOne( { _id: lessonId }, {$set: updateData} );
 
+        //Success response
         res.json({
             success: true
         });
 
+        //Error
     } catch (error) {
         res.status(500).json({
             success: false,
