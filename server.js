@@ -35,6 +35,43 @@ app.use('/images', express.static(path.join(__dirname, '/Images')))
 //mongodb server connection string
 const client = new MongoClient ('mongodb://localhost:27017/');
 
+//GET: returning Enrolment Number
+app.get('/enrolment/M01023728/:lessonid', async (req, res) => {
+
+    try {
+
+        //Lesson Id and database definition
+        const lessonId = parseInt(req.params.lessonid);
+        const db = client.db('lessonsDB');
+
+        //looks for the lesson within the database collection
+        const lesson = await db.collection('lessons')
+                       .findOne({ id: lessonId });
+
+        //if lesson does not exist return 404 which shows it doesnt exist
+        if (!lesson) {
+            return res.status(404).json({
+                error:'Lesson not found'
+            });
+        }
+
+        //if enrolment is successful it returns the id and enrolment number
+        //takes away the amount of spaces if people enrolled
+        const enrolment = 5 - lesson.spaces;
+        res.json({
+            lessonId,
+            enrolment
+        });
+
+        //Error response
+    } catch (error) {
+        res.status(500).json({
+            error: 'Failed to get Enrolment Number'
+        });
+    }
+});
+
+
 //GET: searching lesson by attribute
 app.get('/search/M01023728', async (req, res) => {
 
@@ -49,20 +86,23 @@ app.get('/search/M01023728', async (req, res) => {
                 .find({
                     $or: [
                             { 
+                                //subject
                                 subject: {
                                 $regex: searchTerms, $options: 'i'
                             }},
                             { 
+                                //location
                                 location: {
                                 $regex: searchTerms, $options: 'i'
                             }},
                             {
+                                //price into string
                                 $expr: { $regexMatch: {
                                     input: { $toString: '$price' }, regex: searchTerms
                                 }}
                             },
                             {
-                                
+                                //spaces into string
                                 $expr: { $regexMatch: {
                                     input: { $toString: '$spaces' }, regex: searchTerms
                                 }}
@@ -87,7 +127,7 @@ app.get('/search/M01023728', async (req, res) => {
 app.get('/lessons/M01023728', async (req, res) => {
 
     try {
-        //Database and lesson collection
+        //Database
         const db = client.db('lessonsDB');
 
         //shows me the amount of documents inside DB and console
@@ -117,6 +157,8 @@ app.get('/lessons/M01023728', async (req, res) => {
 app.post ('/orders/M01023728', async (req, res) => {
 
     try {
+
+        //orders and database definition
         const order = req.body;
         const db = client.db('lessonsDB')
 
@@ -167,4 +209,4 @@ app.put('/lessons/M01023728/:id', async (req, res) => {
 //Server
 app.listen(3000, () => {
     console.log('Server running on port 3000');
-});
+})
