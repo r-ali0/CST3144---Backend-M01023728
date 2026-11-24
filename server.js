@@ -35,6 +35,54 @@ app.use('/images', express.static(path.join(__dirname, '/Images')))
 //mongodb server connection string
 const client = new MongoClient ('mongodb://localhost:27017/');
 
+//GET: searching lesson by attribute
+app.get('/search/M01023728', async (req, res) => {
+
+    try {
+
+        //database and search query definition
+        const db = client.db('lessonsDB');
+        const searchTerms = req.query.q;
+
+        //Lesson queries for location, subject, price and spaces
+        const lessons = await db.collection('lessons')
+                .find({
+                    $or: [
+                            { 
+                                subject: {
+                                $regex: searchTerms, $options: 'i'
+                            }},
+                            { 
+                                location: {
+                                $regex: searchTerms, $options: 'i'
+                            }},
+                            {
+                                $expr: { $regexMatch: {
+                                    input: { $toString: '$price' }, regex: searchTerms
+                                }}
+                            },
+                            {
+                                
+                                $expr: { $regexMatch: {
+                                    input: { $toString: '$spaces' }, regex: searchTerms
+                                }}
+                            
+                            }
+                        ]
+                        }).toArray();
+
+
+        //Success, returns lesson query                
+        res.json(lessons);  
+     
+        //Error response
+    } catch (error) {
+        res.status(500).json({
+            error: 'Search failed'
+        });
+    }
+});
+
 //GET: 10 Lessons with their information inside database
 app.get('/lessons/M01023728', async (req, res) => {
 
