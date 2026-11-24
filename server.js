@@ -139,31 +139,6 @@ const lessons = [
     }
 ];
 
-//GET: Adding Lesson root and their information inside the database
-app.get('/rootLessons', async (req, res) => {
-
-    try {
-        //Inserting hardcoded lesson info from frontend
-        const db = client.db('lessonsDB');
-        const result = await db.collection('lessons')
-              .insertMany(lessons);
-
-              //if successful gives me the 
-              //amount of lessons and shows it insdie the database
-              res.json({
-                success: true,
-                inserted: result.insertedCount
-              });
-    //Error
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-    }
-});
-
 //GET: 10 Lessons with their information inside database
 app.get('/lessons/M01023728', async (req, res) => {
 
@@ -215,6 +190,7 @@ app.post ('/orders/M01023728', async (req, res) => {
         });
     }
 });
+
 //PUT: updating lesson attributes e.g spaces
 app.put('/lessons/M01023728/:id', async (req, res) => {
 
@@ -227,14 +203,14 @@ app.put('/lessons/M01023728/:id', async (req, res) => {
         //Updates lesson attributes inside the database
         const updateData = req.body;
 
-        await db.collection('lessons')
-        .updateOne( { _id: lessonId }, {$set: updateData} );
+        const result = await db.collection('lessons')
+        .updateOne( { id: lessonId }, {$set: updateData} );
 
-        //Success response
-        res.json({
-            success: true
-        });
-
+        console.log(result);
+        
+        //Success response gives result
+        res.json(result)
+    
         //Error
     } catch (error) {
         res.status(500).json({
