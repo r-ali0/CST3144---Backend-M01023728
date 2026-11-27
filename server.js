@@ -154,7 +154,7 @@ app.get('/lessons/M01023728', async (req, res) => {
 
         //Send status and error message
         res.status(500).json({
-            error: 'Failed to retrieve lessons'
+            error: error.message
         });
     }
 });
@@ -211,8 +211,6 @@ app.put('/lessons/M01023728/:id', async (req, res) => {
         });
     }
 });
-
-//testing .gitignore file
 
 //Server
 app.listen(3000, () => {
