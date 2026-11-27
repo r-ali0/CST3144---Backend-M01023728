@@ -1,8 +1,13 @@
 //Imports: express, cors and mongodb
 import express from 'express';
 import cors from 'cors';
-import 'dotenv/config';
+import dotenv from 'dotenv';
 import { MongoClient } from 'mongodb';
+
+//config file for connection string and debugging
+dotenv.config({ path: './config.env' });
+console.log('URI:', process.env.MONGODB_URI);
+console.log(process.env);
 
 //Static files middleware imports and definiton
 import path from 'path';
@@ -34,7 +39,7 @@ app.use((req, res, next) => {
 app.use('/images', express.static(path.join(__dirname, '/Images')))
 
 //mongodb server connection string
-const client = new MongoClient (process.env.MONGO_URI);
+const client = new MongoClient (process.env.MONGODB_URI);
 
 //GET: returning Enrolment Number
 app.get('/enrolment/M01023728/:lessonid', async (req, res) => {
